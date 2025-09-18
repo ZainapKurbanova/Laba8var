@@ -1,12 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Laba8var.TemplateMethod;
 
 namespace Laba8var.Models
 {
-    public class Dessert : MenuItem
+    public class Dessert : MenuItem, Preparable
     {
         private int calories;
 
@@ -33,6 +30,13 @@ namespace Laba8var.Models
                 throw new ArgumentException("Скидка должна быть от 0 до 100%.");
 
             return Price - Price * discountPercent / 100;
+        }
+
+        // Реализация метода Prepare из интерфейса Preparable
+        public void Prepare()
+        {
+            var cookingProcess = new DessertCookingProcess(this);
+            cookingProcess.Prepare();
         }
 
         public override string ToString()

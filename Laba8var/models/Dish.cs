@@ -1,13 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Laba8var.TemplateMethod;
 
 namespace Laba8var.Models
 {
-
-    public class Dish : MenuItem
+    public class Dish : MenuItem, Preparable
     {
         private List<string> ingredients;
 
@@ -31,11 +28,17 @@ namespace Laba8var.Models
             return Price - Price * discountPercent / 100;
         }
 
+        // Реализация метода Prepare из интерфейса Preparable
+        public void Prepare()
+        {
+            var cookingProcess = new DishCookingProcess(this);
+            cookingProcess.Prepare();
+        }
+
         public override string ToString()
         {
             string ing = Ingredients.Count > 0 ? string.Join(", ", Ingredients) : "нет ингредиентов";
             return $"Блюдо: {Name}, Цена: {Price}, Ингредиенты: {ing}";
         }
     }
-
 }

@@ -1,12 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Laba8var.TemplateMethod;
 
 namespace Laba8var.Models
 {
-    public class Drink : MenuItem
+    public class Drink : MenuItem, Preparable
     {
         private double volume;
 
@@ -35,10 +32,16 @@ namespace Laba8var.Models
             return Price - Price * discountPercent / 100;
         }
 
+        // Реализация метода Prepare из интерфейса Preparable
+        public void Prepare()
+        {
+            var cookingProcess = new DrinkCookingProcess(this);
+            cookingProcess.Prepare();
+        }
+
         public override string ToString()
         {
             return $"Напиток: {Name}, Цена: {Price}, Объем: {Volume} мл";
         }
     }
-
 }
