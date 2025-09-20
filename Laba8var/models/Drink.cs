@@ -43,5 +43,26 @@ namespace Laba8var.Models
         {
             return $"Напиток: {Name}, Цена: {Price}, Объем: {Volume} мл";
         }
+
+        // Перевод в словарь
+        public override Dictionary<string, object> ToDict()
+        {
+            var dict = base.ToDict();
+            dict["Volume"] = Volume;
+            return dict;
+        }
+
+        // Перевод из словаря
+        public static Drink FromDict(Dictionary<string, object> dict)
+        {
+            return new Drink(
+                Convert.ToInt32(dict["id"]),
+                dict["name"].ToString(),
+                Convert.ToDecimal(dict["price"]),
+                dict["category"].ToString(),
+                Convert.ToDouble(dict["Volume"]),
+                Convert.ToBoolean(dict["isAvailable"])
+            );
+        }
     }
 }

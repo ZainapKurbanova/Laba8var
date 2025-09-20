@@ -1,5 +1,7 @@
 ﻿using Laba8var.mixins;
 using System;
+using Newtonsoft.Json.Linq;
+using Laba8var.exceptions;
 namespace Laba8var.Models
 {
     public abstract class MenuItem : IComparable<MenuItem>, ILoggingMixin, INotificationMixin
@@ -29,7 +31,7 @@ namespace Laba8var.Models
             set
             {
                 if (value <= 0)
-                    throw new ArgumentException("Идентификатор должен быть больше нуля.");
+                    throw new InvalidItemError("Идентификатор должен быть больше нуля.");
                 itemId = value;
             }
         }
@@ -40,7 +42,7 @@ namespace Laba8var.Models
             get => name;
             set => name = !string.IsNullOrWhiteSpace(value)
                 ? value
-                : throw new ArgumentException("Название не может быть пустым.");
+                : throw new InvalidItemError("Название не может быть пустым.");
         }
 
         /// Цена
@@ -50,7 +52,7 @@ namespace Laba8var.Models
             set
             {
                 if (value < 0)
-                    throw new ArgumentException("Цена не может быть отрицательной.");
+                    throw new InvalidItemError("Цена не может быть отрицательной.");
                 price = value;
             }
         }
@@ -61,7 +63,7 @@ namespace Laba8var.Models
             get => category;
             set => category = !string.IsNullOrWhiteSpace(value)
                 ? value
-                : throw new ArgumentException("Категория не может быть пустой.");
+                : throw new InvalidItemError("Категория не может быть пустой.");
         }
 
         /// Доступен ли пункт меню для заказа
@@ -109,6 +111,50 @@ namespace Laba8var.Models
         public static bool operator >(MenuItem left, MenuItem right) => left.CompareTo(right) > 0;
         public static bool operator ==(MenuItem left, MenuItem right) => Equals(left, right);
         public static bool operator !=(MenuItem left, MenuItem right) => !Equals(left, right);
+
+        /// Преобразует объект в словарь для сериализации
+        public virtual Dictionary<string, object> ToDict()
+        {
+            return new Dictionary<string, object>
+            {
+                ["type"] = GetType().Name,
+                ["id"] = this.ItemId,
+                ["name"] = this.Name,
+                ["price"] = this.Price,
+                ["category"] = this.Category,
+                ["isAvailable"] = this.IsAvailable
+            };
+        }
+
+        /// Восстанавливает MenuItem (конкретный подкласс) из JObject
+        public static MenuItem FromDict(JObject jo)
+        {
+            var type = jo.Value<string>("type") ?? throw new InvalidItemError("Missing type in item data");
+            var id = jo["id"]?.Value<int>() ?? 0;
+            var name = jo.Value<string>("name") ?? string.Empty;
+            var price = jo["price"]?.Value<decimal>() ?? 0m;
+            var category = jo.Value<string>("category") ?? string.Empty;
+            var isAvailable = jo["isAvailable"]?.Value<bool>() ?? true;
+            switch (type.ToLowerInvariant())
+            {
+                case "dish":
+                    var ingredients = jo["ingredients"] != null
+                        ? jo["ingredients"].ToObject<List<string>>()
+                        : new List<string>();
+                    return new Dish(id, name, price, category, ingredients) { IsAvailable = isAvailable };
+
+                case "drink":
+                    var volume = jo["volume"]?.Value<double>() ?? 0.0;
+                    return new Drink(id, name, price, category, volume) { IsAvailable = isAvailable };
+
+                case "dessert":
+                    var calories = jo["calories"]?.Value<int>() ?? 0;
+                    return new Dessert(id, name, price, category, calories) { IsAvailable = isAvailable };
+
+                default:
+                    throw new InvalidItemError($"Unknown menu item type: {type}");
+            }
+        }
     }
 }
 

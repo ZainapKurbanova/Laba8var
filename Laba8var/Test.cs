@@ -1,10 +1,15 @@
 ﻿using Laba8var.ChainOfResponsibility;
+using Laba8var.exceptions;
 using Laba8var.Factories;
 using Laba8var.Meta;
 using Laba8var.Models;
+using Laba8var.permissions;
 using Laba8var.TemplateMethod;
 using System;
 using System.Collections.Generic;
+using Laba8var.services;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Laba8var
 {
@@ -168,6 +173,109 @@ namespace Laba8var
             else
             {
                 Console.WriteLine("Ошибка приведения типов для тестирования шаблонного метода");
+            }
+
+            // Тестирование проверки прав доступа
+            Console.WriteLine("\nТестирование проверки прав доступа");
+            var user = new User { Name = "Alice", Permissions = new[] { "view_order" } };
+            var service = new OrderService();
+            try
+            {
+                PermissionChecker.InvokeWithPermission(user, service.ChangeOrder);
+            }
+            catch (PermissionDeniedError ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+
+            // Тестирование проверки пункта меню
+            var invalidDish = new Dish(1, "Салат Цезарь", 350m, "Салаты", new List<string> { "Листья салата", "Курица", "Пармезан" });
+            var order1 = new Order(101, "Иван Иванов", 5);
+            order1.AddItem(invalidDish);
+
+            // Тестирование проверки заказа
+            try
+            {
+                var orders = new List<Order>();
+                int searchId = 202;
+                var order2 = orders.Find(o => o.OrderId == searchId);
+                if (order2 == null)
+                    throw new OrderNotFoundError($"Заказ с ID {searchId} не найден.");
+                Console.WriteLine(order2);
+            }
+            catch (OrderNotFoundError ex)
+            {
+                Console.WriteLine($"Ошибка поиска заказа: {ex.Message}");
+            }
+
+            // Тестирование сериализации и десериализации
+            Console.WriteLine("\nТестирование сериализации и десериализации");
+            // сериализуем заказ в словарь
+            var orderDict = factoryOrder.ToDict();
+            // ДЕСЕРИАЛИЗАЦИЯ ИЗ DICT
+            var restoredOrderFromDict = Order.FromDict(orderDict);
+            Console.WriteLine("\nВосстановленный заказ из ToDict:");
+            Console.WriteLine(restoredOrderFromDict);
+            Console.WriteLine($"Сумма восстановленного заказа (из dict): {restoredOrderFromDict.TotalCost:C}");
+            // СЕРИАЛИЗАЦИЯ В JSON
+            var json = JsonSerializer.Serialize(orderDict, new JsonSerializerOptions { WriteIndented = true });
+            File.WriteAllText("order.json", json);
+            Console.WriteLine("\nJSON сохранён в order.json");
+            //ДЕСЕРИАЛИЗАЦИЯ ИЗ JSON
+            var loadedJson = File.ReadAllText("order.json");
+            var parsed = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(loadedJson);
+            if (parsed == null)
+            {
+                Console.WriteLine("Ошибка: не удалось распарсить JSON.");
+            }
+            else
+            {
+                Dictionary<string, object> plainDict = ConvertJsonElementDict(parsed);
+                var restoredOrderFromJson = Order.FromDict(plainDict);
+                Console.WriteLine("\nВосстановленный заказ из JSON:");
+                Console.WriteLine(restoredOrderFromJson);
+                Console.WriteLine($"Сумма восстановленного заказа (из json): {restoredOrderFromJson.TotalCost:C}");
+            }
+
+            static object ConvertJsonElement(JsonElement el)
+            {
+                switch (el.ValueKind)
+                {
+                    case JsonValueKind.Object:
+                        var d = new Dictionary<string, object>();
+                        foreach (var p in el.EnumerateObject())
+                            d[p.Name] = ConvertJsonElement(p.Value);
+                        return d;
+
+                    case JsonValueKind.Array:
+                        var list = new List<object>();
+                        foreach (var it in el.EnumerateArray())
+                            list.Add(ConvertJsonElement(it));
+                        return list;
+
+                    case JsonValueKind.String:
+                        return el.GetString() ?? string.Empty;
+
+                    case JsonValueKind.Number:
+                        if (el.TryGetInt32(out var i)) return i;
+                        if (el.TryGetInt64(out var l)) return l;
+                        if (el.TryGetDouble(out var dnum)) return dnum;
+                        return el.GetDecimal(); // fallback to decimal
+
+                    case JsonValueKind.True:
+                        return true;
+                    case JsonValueKind.False:
+                        return false;
+                    case JsonValueKind.Null:
+                        return null!;
+                    default:
+                        return null!;
+                }
+            }
+
+            static Dictionary<string, object> ConvertJsonElementDict(Dictionary<string, JsonElement> dict)
+            {
+                return dict.ToDictionary(kv => kv.Key, kv => ConvertJsonElement(kv.Value));
             }
 
         }

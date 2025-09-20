@@ -40,5 +40,28 @@ namespace Laba8var.Models
             string ing = Ingredients.Count > 0 ? string.Join(", ", Ingredients) : "нет ингредиентов";
             return $"Блюдо: {Name}, Цена: {Price}, Ингредиенты: {ing}";
         }
+
+        // Перевод в словарь
+        public override Dictionary<string, object> ToDict()
+        {
+            var dict = base.ToDict();
+            dict["Ingredients"] = new List<string>(Ingredients);
+            return dict;
+        }
+
+        // Перевод из словаря
+        public static Dish FromDict(Dictionary<string, object> dict)
+        {
+            var ingredientsObj = dict["Ingredients"] as List<object> ?? new List<object>();
+            var ingredients = ingredientsObj.Select(x => x?.ToString() ?? string.Empty).ToList();
+            return new Dish(
+                Convert.ToInt32(dict["id"]),
+                dict["name"].ToString(),
+                Convert.ToDecimal(dict["price"]),
+                dict["category"].ToString(),
+                ingredients,
+                Convert.ToBoolean(dict["isAvailable"])
+            );
+        }
     }
 }

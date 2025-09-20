@@ -1,4 +1,5 @@
 ﻿using Laba8var.mixins;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -72,6 +73,54 @@ namespace Laba8var.Models
         public override string ToString()
         {
             return $"Заказ №{OrderId}, Клиент: {Customer}, {Table}, Сумма: {TotalCost}, Позиции: {items.Count}";
+        }
+
+        // Перевод в словарь
+        public Dictionary<string, object> ToDict()
+        {
+            return new Dictionary<string, object>
+            {
+                ["OrderId"] = OrderId,
+                ["Customer"] = Customer,
+                ["TableNumber"] = Table.TableNumber,
+                ["TotalCost"] = TotalCost,
+                ["Items"] = items.Select(i => i.ToDict()).ToList()
+            };
+        }
+
+        // Перевод из словаря
+        public static Order FromDict(Dictionary<string, object> dict)
+        {
+            var order = new Order(
+                Convert.ToInt32(dict["OrderId"]),
+                dict["Customer"].ToString(),
+                Convert.ToInt32(dict["TableNumber"])
+            );
+
+            if (dict["Items"] is IEnumerable<object> itemsEnum)
+            {
+                foreach (var itemObj in itemsEnum)
+                {
+                    if (itemObj is Dictionary<string, object> itemDict)
+                    {
+                        var type = itemDict["type"].ToString();
+                        MenuItem item = type switch
+                        {
+                            "Dish" => Dish.FromDict(itemDict),
+                            "Drink" => Drink.FromDict(itemDict),
+                            "Dessert" => Dessert.FromDict(itemDict),
+                            _ => throw new InvalidOperationException($"Неизвестный тип: {type}")
+                        };
+                        order.AddItem(item);
+                    }
+                    else if (itemObj is JObject jo)
+                    {
+                        var item = MenuItem.FromDict(jo);
+                        order.AddItem(item);
+                    }
+                }
+            }
+            return order;
         }
     }
 }
