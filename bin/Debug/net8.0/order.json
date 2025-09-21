@@ -1,0 +1,39 @@
+{
+  "OrderId": 202,
+  "Customer": "\u0410\u043D\u043D\u0430 \u041F\u0435\u0442\u0440\u043E\u0432\u0430",
+  "TableNumber": 8,
+  "TotalCost": 2000,
+  "Items": [
+    {
+      "type": "Dish",
+      "id": 7,
+      "name": "\u0421\u0442\u0435\u0439\u043A ",
+      "price": 1200,
+      "category": "\u0413\u043E\u0440\u044F\u0447\u0438\u0435 \u0431\u043B\u044E\u0434\u0430",
+      "isAvailable": true,
+      "Ingredients": [
+        "\u0413\u043E\u0432\u044F\u0434\u0438\u043D\u0430",
+        "\u0422\u0440\u0430\u0432\u044B",
+        "\u0421\u043F\u0435\u0446\u0438\u0438"
+      ]
+    },
+    {
+      "type": "Drink",
+      "id": 8,
+      "name": "\u041C\u043E\u0445\u0438\u0442\u043E",
+      "price": 350,
+      "category": "\u041A\u043E\u043A\u0442\u0435\u0439\u043B\u0438",
+      "isAvailable": true,
+      "Volume": 400
+    },
+    {
+      "type": "Dessert",
+      "id": 9,
+      "name": "\u0427\u0438\u0437\u043A\u0435\u0439\u043A",
+      "price": 450,
+      "category": "\u0414\u0435\u0441\u0435\u0440\u0442\u044B",
+      "isAvailable": true,
+      "Calories": 280
+    }
+  ]
+}
