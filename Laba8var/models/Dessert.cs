@@ -1,18 +1,22 @@
 ﻿using System;
+using System.Collections.Generic;
 using Laba8var.TemplateMethod;
 
 namespace Laba8var.Models
 {
+    /// <summary>Представляет десерт в меню</summary>
     public class Dessert : MenuItem, Preparable
     {
         private int calories;
 
+        /// <summary>Создает новый экземпляр десерта</summary>
         public Dessert(int itemId, string name, decimal price, string category, int calories, bool isAvailable = true)
             : base(itemId, name, price, category, isAvailable)
         {
             Calories = calories;
         }
 
+        /// <summary>Калорийность десерта</summary>
         public int Calories
         {
             get => calories;
@@ -24,6 +28,7 @@ namespace Laba8var.Models
             }
         }
 
+        /// <summary>Рассчитывает стоимость с учетом скидки</summary>
         public override decimal CalculateCost(decimal discountPercent = 0)
         {
             if (discountPercent < 0 || discountPercent > 100)
@@ -32,19 +37,20 @@ namespace Laba8var.Models
             return Price - Price * discountPercent / 100;
         }
 
-        // Реализация метода Prepare из интерфейса Preparable
+        /// <summary>Запускает процесс приготовления десерта</summary>
         public void Prepare()
         {
             var cookingProcess = new DessertCookingProcess(this);
             cookingProcess.Prepare();
         }
 
+        /// <summary>Возвращает строковое представление десерта</summary>
         public override string ToString()
         {
             return $"Десерт: {Name}, Цена: {Price}, Калорийность: {Calories} ккал";
         }
 
-        // Перевод в словарь
+        /// <summary>Преобразует объект в словарь</summary>
         public override Dictionary<string, object> ToDict()
         {
             var dict = base.ToDict();
@@ -52,7 +58,7 @@ namespace Laba8var.Models
             return dict;
         }
 
-        // Перевод из словаря
+        /// <summary>Создает объект из словаря</summary>
         public static Dessert FromDict(Dictionary<string, object> dict)
         {
             return new Dessert(

@@ -6,10 +6,17 @@ using System.Threading.Tasks;
 
 namespace Laba8var.Models
 {
+    /// <summary>
+    /// Представляет стол в ресторане.
+    /// </summary>
     public class Table
     {
+        /// <summary>Номер стола.</summary>
         public int TableNumber { get; }
 
+        /// <summary>Создаёт новый стол с указанным номером.</summary>
+        /// <param name="tableNumber">Положительный номер стола.</param>
+        /// <exception cref="ArgumentException">Если номер стола ≤ 0.</exception>
         public Table(int tableNumber)
         {
             if (tableNumber <= 0)
@@ -17,9 +24,7 @@ namespace Laba8var.Models
             TableNumber = tableNumber;
         }
 
-        public override string ToString()
-        {
-            return $"Стол №{TableNumber}";
-        }
+        /// <summary>Строковое представление стола.</summary>
+        public override string ToString() => $"Стол №{TableNumber}";
     }
 }

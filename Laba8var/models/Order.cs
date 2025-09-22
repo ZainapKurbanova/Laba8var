@@ -6,19 +6,33 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+
+
 namespace Laba8var.Models
 {
+    /// <summary>
+    /// Заказ клиента. Реализует <see cref="ILoggingMixin"/> и <see cref="INotificationMixin"/>.
+    /// </summary>
     public class Order : ILoggingMixin, INotificationMixin
     {
         private List<MenuItem> items;
 
+        /// <summary>Идентификатор заказа.</summary>
         public int OrderId { get; }
+
+        /// <summary>Имя клиента.</summary>
         public string Customer { get; set; }
-        public Table Table { get; }   // композиция
+
+        /// <summary>Стол, за которым оформлен заказ.</summary>
+        public Table Table { get; }
+
+        /// <summary>Общая стоимость заказа.</summary>
         public decimal TotalCost { get; private set; }
 
-        public IReadOnlyList<MenuItem> Items => items.AsReadOnly(); // только для чтения снаружи
+        /// <summary>Список пунктов меню (только для чтения).</summary>
+        public IReadOnlyList<MenuItem> Items => items.AsReadOnly();
 
+        /// <summary>Создаёт новый заказ.</summary>
         public Order(int orderId, string customer, int tableNumber)
         {
             if (string.IsNullOrWhiteSpace(customer))
@@ -26,69 +40,56 @@ namespace Laba8var.Models
 
             OrderId = orderId;
             Customer = customer;
-            Table = new Table(tableNumber); // композиция — Table создаётся внутри заказа
+            Table = new Table(tableNumber);
             items = new List<MenuItem>();
 
-            // Логируем создание заказа
-            ((ILoggingMixin)this).LogAction($"Заказ №{OrderId} создан для клиента {Customer} за столом №{tableNumber}");
+            ((ILoggingMixin)this).LogAction($"Заказ №{OrderId} создан для {Customer} за столом №{tableNumber}");
             ((INotificationMixin)this).SendNotification($"Новый заказ #{OrderId} оформлен");
         }
 
+        /// <summary>Добавляет пункт меню и пересчитывает стоимость.</summary>
         public void AddItem(MenuItem item)
         {
-            if (item == null)
-                throw new ArgumentNullException(nameof(item), "Пункт меню не может быть null.");
-
+            if (item == null) throw new ArgumentNullException(nameof(item));
             items.Add(item);
             CalculateTotal();
-
-            // Логируем добавление пункта меню
-            ((ILoggingMixin)this).LogAction($"В заказ №{OrderId} добавлен пункт: {item.Name} (ID: {item.ItemId})");
-
+            ((ILoggingMixin)this).LogAction($"В заказ №{OrderId} добавлен пункт: {item.Name}");
         }
 
+        /// <summary>Удаляет пункт меню и пересчитывает стоимость.</summary>
         public void RemoveItem(MenuItem item)
         {
-            if (item == null)
-                throw new ArgumentNullException(nameof(item), "Пункт меню не может быть null.");
-
+            if (item == null) throw new ArgumentNullException(nameof(item));
             items.Remove(item);
             CalculateTotal();
-
-            // Логируем удаление пункта 
-            ((ILoggingMixin)this).LogAction($"Из заказа №{OrderId} удален пункт: {item.Name} (ID: {item.ItemId})");
+            ((ILoggingMixin)this).LogAction($"Из заказа №{OrderId} удален пункт: {item.Name}");
         }
 
-        public void CalculateTotal()
-        {
-            TotalCost = items.Sum(i => i.CalculateCost());
-        }
+        /// <summary>Пересчитывает общую стоимость заказа.</summary>
+        public void CalculateTotal() => TotalCost = items.Sum(i => i.CalculateCost());
 
-        // Новый метод для отметки заказа как готового
+        /// <summary>Отмечает заказ как готовый и отправляет уведомление.</summary>
         public void MarkAsReady()
         {
             ((INotificationMixin)this).SendNotification($"Заказ №{OrderId} готов! Клиент: {Customer}, Стол: {Table.TableNumber}");
             ((ILoggingMixin)this).LogAction($"Заказ №{OrderId} отмечен как готовый");
         }
-        public override string ToString()
-        {
-            return $"Заказ №{OrderId}, Клиент: {Customer}, {Table}, Сумма: {TotalCost}, Позиции: {items.Count}";
-        }
 
-        // Перевод в словарь
-        public Dictionary<string, object> ToDict()
-        {
-            return new Dictionary<string, object>
-            {
-                ["OrderId"] = OrderId,
-                ["Customer"] = Customer,
-                ["TableNumber"] = Table.TableNumber,
-                ["TotalCost"] = TotalCost,
-                ["Items"] = items.Select(i => i.ToDict()).ToList()
-            };
-        }
+        /// <summary>Строковое представление заказа.</summary>
+        public override string ToString() =>
+            $"Заказ №{OrderId}, Клиент: {Customer}, {Table}, Сумма: {TotalCost}, Позиции: {items.Count}";
 
-        // Перевод из словаря
+        /// <summary>Преобразует заказ в словарь для сериализации.</summary>
+        public Dictionary<string, object> ToDict() => new()
+        {
+            ["OrderId"] = OrderId,
+            ["Customer"] = Customer,
+            ["TableNumber"] = Table.TableNumber,
+            ["TotalCost"] = TotalCost,
+            ["Items"] = items.Select(i => i.ToDict()).ToList()
+        };
+
+        /// <summary>Создаёт заказ из словаря.</summary>
         public static Order FromDict(Dictionary<string, object> dict)
         {
             var order = new Order(
@@ -115,8 +116,7 @@ namespace Laba8var.Models
                     }
                     else if (itemObj is JObject jo)
                     {
-                        var item = MenuItem.FromDict(jo);
-                        order.AddItem(item);
+                        order.AddItem(MenuItem.FromDict(jo));
                     }
                 }
             }
@@ -124,3 +124,4 @@ namespace Laba8var.Models
         }
     }
 }
+

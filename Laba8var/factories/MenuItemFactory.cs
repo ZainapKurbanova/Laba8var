@@ -4,9 +4,14 @@ using Laba8var.Models;
 
 namespace Laba8var.Factories
 {
+    /// <summary>
+    /// Фабрика для создания пунктов меню
+    /// </summary>
     public static class MenuItemFactory
     {
-        // Создает пункт меню указанного типа
+        /// <summary>
+        /// Создает пункт меню указанного типа
+        /// </summary>
         public static MenuItem CreateItem(string itemType, params object[] args)
         {
             return itemType.ToLower() switch
@@ -18,7 +23,9 @@ namespace Laba8var.Factories
             };
         }
 
-        // Создает объект блюда
+        /// <summary>
+        /// Создает блюдо
+        /// </summary>
         private static Dish CreateDish(object[] args)
         {
             if (args.Length < 5)
@@ -34,7 +41,9 @@ namespace Laba8var.Factories
             );
         }
 
-        // Создает объект напитка
+        /// <summary>
+        /// Создает напиток
+        /// </summary>
         private static Drink CreateDrink(object[] args)
         {
             if (args.Length < 5)
@@ -50,7 +59,9 @@ namespace Laba8var.Factories
             );
         }
 
-        // Создает объект десерта
+        /// <summary>
+        /// Создает десерт
+        /// </summary>
         private static Dessert CreateDessert(object[] args)
         {
             if (args.Length < 5)

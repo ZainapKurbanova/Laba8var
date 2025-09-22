@@ -6,9 +6,15 @@ using System.Threading.Tasks;
 
 namespace Laba8var.Models
 {
+    /// <summary>
+    /// Интерфейс для объектов, которые могут генерировать отчет.
+    /// </summary>
     internal interface Reportable
     {
-        /// Генерирует отчет 
+        /// <summary>
+        /// Генерирует отчет для объекта и возвращает его в виде строки.
+        /// </summary>
+        /// <returns>Строковое представление отчета.</returns>
         string GenerateReport();
     }
 }

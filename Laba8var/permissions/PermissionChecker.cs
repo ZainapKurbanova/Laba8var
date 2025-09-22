@@ -8,8 +8,10 @@ using System.Threading.Tasks;
 
 namespace Laba8var.permissions
 {
+    /// <summary>Проверяет права доступа для методов</summary>
     public static class PermissionChecker
     {
+        /// <summary>Выполняет действие с проверкой прав</summary>
         public static void InvokeWithPermission(User user, Action action)
         {
             var method = action.Method;

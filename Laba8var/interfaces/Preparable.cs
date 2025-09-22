@@ -6,9 +6,14 @@ using System.Threading.Tasks;
 
 namespace Laba8var.Models
 {
+    /// <summary>
+    /// Интерфейс, описывающий объекты, которые можно приготовить.
+    /// </summary>
     public interface Preparable
     {
-        /// Описывает процесс приготовления
+        /// <summary>
+        /// Описывает процесс приготовления объекта.
+        /// </summary>
         void Prepare();
     }
 }

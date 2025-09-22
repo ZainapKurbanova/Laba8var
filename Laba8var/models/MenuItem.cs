@@ -2,8 +2,13 @@
 using System;
 using Newtonsoft.Json.Linq;
 using Laba8var.exceptions;
+
 namespace Laba8var.Models
 {
+    /// <summary>
+    /// Абстрактный класс для всех пунктов меню (блюда, напитки, десерты).
+    /// Содержит базовые свойства и методы сравнения.
+    /// </summary>
     public abstract class MenuItem : IComparable<MenuItem>, ILoggingMixin, INotificationMixin
     {
         private int itemId;
@@ -12,6 +17,9 @@ namespace Laba8var.Models
         private string category;
         private bool isAvailable;
 
+        /// <summary>
+        /// Конструктор базового пункта меню
+        /// </summary>
         protected MenuItem(int itemId, string name, decimal price, string category, bool isAvailable = true)
         {
             ItemId = itemId;
@@ -20,11 +28,12 @@ namespace Laba8var.Models
             Category = category;
             IsAvailable = isAvailable;
 
-            // Логируем создание пункта меню 
+            // Логируем создание пункта меню
             ((ILoggingMixin)this).LogAction($"Создан пункт меню: {name} (ID: {itemId}, Категория: {category})");
         }
 
-        /// Уникальный идентификатор пункта меню
+        // --- Свойства ---
+        /// Уникальный идентификатор
         public int ItemId
         {
             get => itemId;
@@ -36,7 +45,7 @@ namespace Laba8var.Models
             }
         }
 
-        /// Название блюда/напитка
+        /// Название
         public string Name
         {
             get => name;
@@ -57,7 +66,7 @@ namespace Laba8var.Models
             }
         }
 
-        /// Категория (например: «Супы», «Напитки», «Десерты»)
+        /// Категория (салаты, напитки и т.д.)
         public string Category
         {
             get => category;
@@ -66,7 +75,7 @@ namespace Laba8var.Models
                 : throw new InvalidItemError("Категория не может быть пустой.");
         }
 
-        /// Доступен ли пункт меню для заказа
+        /// Доступность для заказа
         public bool IsAvailable
         {
             get => isAvailable;
@@ -75,7 +84,7 @@ namespace Laba8var.Models
                 if (isAvailable == value) return;
                 isAvailable = value;
 
-                // логируем смену доступности
+                // логируем смену статуса
                 var status = value ? "доступен" : "недоступен";
                 ((ILoggingMixin)this).LogAction($"Пункт меню #{ItemId} «{Name}» теперь {status}");
 
@@ -85,34 +94,58 @@ namespace Laba8var.Models
             }
         }
 
-        /// Абстрактный метод расчёта стоимости. Реализуется в наследниках
+        // --- Абстрактные методы ---
+        /// Метод для расчёта стоимости (реализуется в наследниках).
         public abstract decimal CalculateCost(decimal discountPercent = 0);
 
-        /// Строковое представление объекта
+        // --- Переопределение ToString ---
         public override string ToString()
         {
             return $"Пункт меню: {Name}, Цена: {Price:C}, Категория: {Category}, Доступен: {IsAvailable}";
         }
 
-        /// Сравнение по цене, а при равенстве — по названию
+        // Реализация IComparable Аналог __lt__ и __gt__
+        /// Сравнение по цене, если цены равны — по названию
         public int CompareTo(MenuItem other)
         {
             if (other == null) return 1;
 
             int priceComparison = Price.CompareTo(other.Price);
-
             if (priceComparison != 0)
                 return priceComparison;
 
             return string.Compare(Name, other.Name, StringComparison.OrdinalIgnoreCase);
         }
 
+        // -Equals и GetHashCode  Аналог __eq__
+        /// Проверка равенства по ID, имени и цене
+        public override bool Equals(object obj)
+        {
+            if (obj is MenuItem other)
+            {
+                return ItemId == other.ItemId &&
+                       string.Equals(Name, other.Name, StringComparison.OrdinalIgnoreCase) &&
+                       Price == other.Price;
+            }
+            return false;
+        }
+
+        /// Хэш-код должен соответствовать Equals
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(ItemId, Name.ToLowerInvariant(), Price);
+        }
+
+        // --- Перегрузка операторов ---
         public static bool operator <(MenuItem left, MenuItem right) => left.CompareTo(right) < 0;
         public static bool operator >(MenuItem left, MenuItem right) => left.CompareTo(right) > 0;
+        public static bool operator <=(MenuItem left, MenuItem right) => left.CompareTo(right) <= 0;
+        public static bool operator >=(MenuItem left, MenuItem right) => left.CompareTo(right) >= 0;
         public static bool operator ==(MenuItem left, MenuItem right) => Equals(left, right);
         public static bool operator !=(MenuItem left, MenuItem right) => !Equals(left, right);
 
-        /// Преобразует объект в словарь для сериализации
+        // --- Сериализация ---
+        /// Преобразование в словарь
         public virtual Dictionary<string, object> ToDict()
         {
             return new Dictionary<string, object>
@@ -126,7 +159,7 @@ namespace Laba8var.Models
             };
         }
 
-        /// Восстанавливает MenuItem (конкретный подкласс) из JObject
+        /// Восстановление из JObject (после JSON-десериализации)
         public static MenuItem FromDict(JObject jo)
         {
             var type = jo.Value<string>("type") ?? throw new InvalidItemError("Missing type in item data");
@@ -135,6 +168,7 @@ namespace Laba8var.Models
             var price = jo["price"]?.Value<decimal>() ?? 0m;
             var category = jo.Value<string>("category") ?? string.Empty;
             var isAvailable = jo["isAvailable"]?.Value<bool>() ?? true;
+
             switch (type.ToLowerInvariant())
             {
                 case "dish":
@@ -157,4 +191,3 @@ namespace Laba8var.Models
         }
     }
 }
-
