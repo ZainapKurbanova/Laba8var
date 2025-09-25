@@ -1,4 +1,5 @@
 ﻿using System;
+using Laba8var.Interfaces;
 using Laba8var.TemplateMethod;
 
 namespace Laba8var.Models
