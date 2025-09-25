@@ -161,18 +161,18 @@ namespace Laba8var
             // Проверяем, что приведение типов прошло успешно
             if (steakDish != null && mojitoDrink != null && cheesecakeDessert != null)
             {
-                // Тестирование процесса приготовления для каждого типа блюд
-                logger.LogInformation("\nПроцесс приготовления стейка:");
-                var steakProcess = new DishCookingProcess(steakDish);
-                steakProcess.Prepare();
+                Preparable[] preparables = new Preparable[]
+                {
+                new DishCookingProcess(steakDish),
+                new DrinkCookingProcess(mojitoDrink),
+                new DessertCookingProcess(cheesecakeDessert)
+                };
 
-                logger.LogInformation("\nПроцесс приготовления мохито:");
-                var mojitoProcess = new DrinkCookingProcess(mojitoDrink);
-                mojitoProcess.Prepare();
-
-                logger.LogInformation("\nПроцесс приготовления чизкейка:");
-                var cheesecakeProcess = new DessertCookingProcess(cheesecakeDessert);
-                cheesecakeProcess.Prepare();
+                foreach (var preparable in preparables)
+                {
+                    preparable.Prepare(); // Полиморфный вызов через интерфейс
+                    logger.LogInformation("");
+                }
             }
             else
             {

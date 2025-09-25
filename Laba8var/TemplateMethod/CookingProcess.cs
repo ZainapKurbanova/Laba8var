@@ -5,7 +5,7 @@ namespace Laba8var.TemplateMethod
     /// <summary>
     /// Абстрактный шаблонный метод приготовления.
     /// </summary>
-    public abstract class CookingProcess
+    public abstract class CookingProcess : Preparable
     {
         /// <summary>Шаблонный метод, определяющий общий процесс приготовления.</summary>
         public void Prepare()
