@@ -1,4 +1,5 @@
-﻿using Laba8var.mixins;
+using Laba8var.Interfaces;
+using Laba8var.mixins;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -11,9 +12,9 @@ using System.Threading.Tasks;
 namespace Laba8var.Models
 {
     /// <summary>
-    /// Заказ клиента. Реализует <see cref="ILoggingMixin"/> и <see cref="INotificationMixin"/>.
+    /// Заказ клиента. Реализует <see cref="ILoggingMixin"/>, <see cref="INotificationMixin", <see cref="Reportable"/>.
     /// </summary>
-    public class Order : ILoggingMixin, INotificationMixin
+    public class Order : ILoggingMixin, INotificationMixin, Reportable
     {
         private List<MenuItem> items;
 
@@ -78,6 +79,9 @@ namespace Laba8var.Models
         /// <summary>Строковое представление заказа.</summary>
         public override string ToString() =>
             $"Заказ №{OrderId}, Клиент: {Customer}, {Table}, Сумма: {TotalCost}, Позиции: {items.Count}";
+
+        /// <summary>Генерация отчёта.</summary>
+        public string GenerateReport() => $"Отчет по заказу {OrderId}: Общая стоимость {TotalCost}, Items: {Items.Count}";
 
         /// <summary>Преобразует заказ в словарь для сериализации.</summary>
         public Dictionary<string, object> ToDict() => new()
